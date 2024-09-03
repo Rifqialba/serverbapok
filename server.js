@@ -18,16 +18,12 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Middleware
+/// Middleware
 app.use(cors({ origin: "*" }));
-// Middleware
-app.use(express.json());
+app.use(express.json()); // Menggunakan express.json() untuk parsing JSON
 app.use(express.urlencoded({ extended: true }));
 
-// Meningkatkan batas ukuran payload untuk body-parser
-app.use(bodyParser.json({ limit: "10mb" }));
-app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
-
+// Middleware untuk static files
 app.use(express.static("public"));
 
 function checkAuth(req, res, next) {
