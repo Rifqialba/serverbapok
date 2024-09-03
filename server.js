@@ -7,17 +7,7 @@ const bodyParser = require("body-parser");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const XLSX = require("xlsx");
-const upload = multer({ dest: "uploads/" });
 require("dotenv").config();
-const cloudinary = require('cloudinary').v2;
-
-cloudinary.config({
-  cloud_name: process.env.CLOUD_NAME,
-  api_key: process.env.API_KEY,
-  api_secret: process.env.API_SECRET,
-});
-
-module.exports = cloudinary;
 
 // Konfigurasi Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -27,12 +17,13 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 const app = express();
 const port = process.env.PORT || 3000;
 
-/// Middleware
+// Middleware
 app.use(cors({ origin: "*" }));
-app.use(express.json()); // Menggunakan express.json() untuk parsing JSON
-app.use(express.urlencoded({ extended: true }));
 
-// Middleware untuk static files
+// Meningkatkan batas ukuran payload untuk body-parser
+app.use(bodyParser.json({ limit: "10mb" }));
+app.use(bodyParser.urlencoded({ limit: "10mb", extended: true }));
+
 app.use(express.static("public"));
 
 function checkAuth(req, res, next) {
@@ -42,39 +33,9 @@ function checkAuth(req, res, next) {
   req.loggedIn = loggedIn;
   next();
 }
-// Fungsi upload ke Cloudinary
-const uploadToCloudinary = async (file, resourceType = 'image') => {
-  try {
-    const result = await cloudinary.uploader.upload(file.path, { resource_type: resourceType });
-    return result.secure_url;
-  } catch (error) {
-    console.error('Error uploading to Cloudinary:', error);
-    throw error;
-  }
-};
-
-// Endpoint untuk mengunggah gambar
-app.post("/upload-image", multer({ dest: 'uploads/' }).single('image'), async (req, res) => {
-  try {
-    const imageUrl = await uploadToCloudinary(req.file);
-    res.json({ url: imageUrl });
-  } catch (error) {
-    res.status(500).send('Error uploading image');
-  }
-});
-
-// Endpoint untuk mengunggah PDF
-app.post("/upload-pdf", multer({ dest: 'uploads/' }).single('pdf'), async (req, res) => {
-  try {
-    const pdfUrl = await uploadToCloudinary(req.file, 'raw');
-    res.json({ url: pdfUrl });
-  } catch (error) {
-    res.status(500).send('Error uploading PDF');
-  }
-});
 
 // Endpoint untuk memeriksa status login
-app.get("/check-/login", checkAuth, (req, res) => {
+app.get("/check-login", checkAuth, (req, res) => {
   res.json({ loggedIn: req.loggedIn });
 });
 
@@ -429,5 +390,5 @@ function processLaporanData(items) {
 }
 
 app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+  console.log(`Server is running on http://localhost:${port}`);
 });
