@@ -20,6 +20,9 @@ const port = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({ origin: "*" }));
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Meningkatkan batas ukuran payload untuk body-parser
 app.use(bodyParser.json({ limit: "10mb" }));
@@ -391,5 +394,5 @@ function processLaporanData(items) {
 }
 
 app.listen(port, () => {
-  console.log(`Server is running on http://localhost:${port}`);
+  console.log(`Server is running on port ${port}`);
 });
